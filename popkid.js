@@ -822,6 +822,8 @@ const l = reply; // sends in small caps automatically
 
 router.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pair.html')));
 
+router.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'admin-dashboard.html')));
+
 router.get('/code', async (req, res) => {
     const number = req.query.number;
     if (!number) return res.json({ error: 'Number required' });

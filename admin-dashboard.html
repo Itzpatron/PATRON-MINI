@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATRON-MD Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-box h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .login-box p {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            display: none;
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .dashboard-hidden {
+            display: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-card .subtext {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #3182ce;
+        }
+
+        .connections-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .connection-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .connection-item.connected {
+            border-left-color: #48bb78;
+        }
+
+        .connection-item.disconnected {
+            border-left-color: #f56565;
+        }
+
+        .connection-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .connection-item-number {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-badge.online {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-badge.offline {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .connection-item-info {
+            font-size: 12px;
+            color: #666;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .connection-item-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .connection-item-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        .log-area {
+            background: #1a202c;
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .log-line {
+            margin: 5px 0;
+        }
+
+        .log-info { color: #4299e1; }
+        .log-success { color: #48bb78; }
+        .log-warning { color: #ed8936; }
+        .log-error { color: #f56565; }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .controls {
+                justify-content: center;
+            }
+        }
+
+        .refresh-badge {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Container -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h1>🤖 PATRON-MD</h1>
+            <p>Admin Dashboard Login</p>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Enter admin password" onkeypress="if(event.key==='Enter')login()">
+            </div>
+            <button class="login-btn" onclick="login()">🔓 Login</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" class="dashboard-hidden">
+        <div class="container">
+            <header>
+                <div>
+                    <h1>🤖 PATRON-MD Dashboard</h1>
+                    <p>Admin Control Panel</p>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="refreshDashboard()">🔄 Refresh</button>
+                    <button class="btn-danger" onclick="logout()" style="margin-left: 10px;">🚪 Logout</button>
+                    <span class="refresh-badge" id="lastUpdate">Last update: --:--:--</span>
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Connections</h3>
+                    <div class="number" id="totalActive">0</div>
+                    <div class="subtext">Bots currently online</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Messages</h3>
+                    <div class="number" id="totalMessages">0</div>
+                    <div class="subtext">Messages processed</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Commands Used</h3>
+                    <div class="number" id="totalCommands">0</div>
+                    <div class="subtext">Total executions</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Server Uptime</h3>
+                    <div class="number" id="serverUptime">--</div>
+                    <div class="subtext">Time since start</div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard -->
+            <div class="dashboard-grid">
+                <!-- Connections Panel -->
+                <div class="panel">
+                    <h2>📱 Active Connections</h2>
+                    <div class="controls">
+                        <button class="btn-success" onclick="openConnectModal()">+ Connect Bot</button>
+                        <button class="btn-info" onclick="connectAll()">🔗 Connect All</button>
+                    </div>
+                    <div class="connections-list" id="connectionsList">
+                        <p style="text-align: center; color: #999;">Loading connections...</p>
+                    </div>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div class="panel">
+                    <h2>📊 Statistics</h2>
+                    <div class="chart-container">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Logs -->
+            <div class="panel">
+                <h2>📋 System Logs</h2>
+                <div class="controls">
+                    <button class="btn-info" onclick="clearLogs()">Clear Logs</button>
+                    <button class="btn-primary" onclick="autoRefreshToggle()">Auto Refresh: ON</button>
+                </div>
+                <div class="log-area" id="logArea">
+                    <div class="log-line log-info">[INFO] Dashboard initialized</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect Modal -->
+    <div class="modal" id="connectModal">
+        <div class="modal-content">
+            <h2>🔗 Connect New Bot</h2>
+            <div class="form-group">
+                <label>WhatsApp Number</label>
+                <input type="text" id="connectNumber" placeholder="2348133729715" maxlength="15">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-danger" onclick="closeConnectModal()">Cancel</button>
+                <button class="btn-success" onclick="connectBot()">Generate Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Config Modal -->
+    <div class="modal" id="configModal">
+        <div class="modal-content">
+            <h2>⚙️ Update Configuration</h2>
+            <div id="configContent"></div>
+            <div class="modal-actions">
+                <button class="btn-danger" onclick="closeConfigModal()">Cancel</button>
+                <button class="btn-success" onclick="saveConfig()">Save Config</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let autoRefreshInterval = null;
+        let statsChart = null;
+        let isLoggedIn = false;
+
+        // Check if user is logged in
+        window.addEventListener('load', () => {
+            const sessionToken = localStorage.getItem('patron_session');
+            if (sessionToken) {
+                showDashboard();
+                addLog('Dashboard loaded', 'success');
+                refreshDashboard();
+                setInterval(refreshDashboard, 10000);
+            }
+        });
+
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            if (!password) {
+                showError('Please enter a password');
+                return;
+            }
+
+            const expectedPassword = 'maximus0000'; // Fixed password
+
+            if (password === expectedPassword) {
+                localStorage.setItem('patron_session', 'authenticated');
+                document.getElementById('passwordInput').value = '';
+                showDashboard();
+                addLog('Admin logged in successfully', 'success');
+                refreshDashboard();
+                setInterval(refreshDashboard, 10000);
+            } else {
+                showError('Invalid password');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        function showDashboard() {
+            isLoggedIn = true;
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').classList.remove('dashboard-hidden');
+        }
+
+        function logout() {
+            if (confirm('Logout from dashboard?')) {
+                localStorage.removeItem('patron_session');
+                isLoggedIn = false;
+                document.getElementById('dashboardContainer').classList.add('dashboard-hidden');
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (response.status === 401) {
+                    logout();
+                    throw new Error('Unauthorized');
+                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                addLog(`Failed to fetch ${endpoint}: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const time = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.className = `log-line log-${type}`;
+            logLine.textContent = `[${time}] ${message}`;
+            logArea.appendChild(logLine);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logArea').innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+
+        async function refreshDashboard() {
+            addLog('Refreshing dashboard...', 'info');
+            
+            // Fetch overall stats
+            const overallStats = await fetchAPI('/stats-overall');
+            if (overallStats) {
+                document.getElementById('totalActive').textContent = overallStats.totalActive || 0;
+                document.getElementById('totalMessages').textContent = (overallStats.totalMessages || 0).toLocaleString();
+                document.getElementById('totalCommands').textContent = (overallStats.totalCommands || 0).toLocaleString();
+                document.getElementById('serverUptime').textContent = formatUptime(overallStats.serverUptime || 0);
+            }
+
+            // Fetch connections
+            const connections = await fetchAPI('/active');
+            if (connections) {
+                displayConnections(connections.numbers || []);
+            }
+
+            // Update last refresh time
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = `Last update: ${now.toLocaleTimeString()}`;
+            addLog('Dashboard refreshed successfully', 'success');
+        }
+
+        async function displayConnections(numbers) {
+            const list = document.getElementById('connectionsList');
+            
+            if (numbers.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999;">No active connections</p>';
+                return;
+            }
+
+            let html = '';
+            for (const number of numbers) {
+                const status = await fetchAPI(`/status?number=${number}`);
+                const isConnected = status?.isConnected;
+                
+                html += `
+                    <div class="connection-item ${isConnected ? 'connected' : 'disconnected'}">
+                        <div class="connection-item-header">
+                            <div class="connection-item-number">📞 ${number}</div>
+                            <span class="status-badge ${isConnected ? 'online' : 'offline'}">
+                                ${isConnected ? '🟢 Online' : '🔴 Offline'}
+                            </span>
+                        </div>
+                        <div class="connection-item-info">
+                            <div>⏱️ Uptime: ${status?.uptime || '0'}s</div>
+                            <div>📅 ${status?.connectionTime || '--'}</div>
+                        </div>
+                        <div class="connection-item-actions">
+                            <button class="btn-info" onclick="showStats('${number}')">📊 Stats</button>
+                            <button class="btn-info" onclick="openConfigModal('${number}')">⚙️ Config</button>
+                            <button class="btn-danger" onclick="deleteBot('${number}')">🗑️ Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        function openConnectModal() {
+            document.getElementById('connectModal').classList.add('active');
+        }
+
+        function closeConnectModal() {
+            document.getElementById('connectModal').classList.remove('active');
+            document.getElementById('connectNumber').value = '';
+        }
+
+        async function connectBot() {
+            const number = document.getElementById('connectNumber').value.trim();
+            if (!number) {
+                addLog('Please enter a number', 'error');
+                return;
+            }
+
+            addLog(`Connecting bot for ${number}...`, 'info');
+            const result = await fetchAPI(`/code?number=${number}`);
+            
+            if (result?.code) {
+                addLog(`✅ Pairing code generated: ${result.code}`, 'success');
+                alert(`📱 Your Pairing Code:\n\n${result.code}\n\nUse this code to pair your WhatsApp account.`);
+            } else if (result?.status === 'already_connected') {
+                addLog(`⚠️ Number already connected`, 'warning');
+                alert('This number is already connected!');
+            } else {
+                addLog(`Failed to generate pairing code`, 'error');
+            }
+            closeConnectModal();
+        }
+
+        async function connectAll() {
+            if (!confirm('Connect all bots from database?')) return;
+            addLog('Starting connect-all process...', 'warning');
+            const result = await fetchAPI('/connect-all');
+            if (result?.total) {
+                addLog(`✅ Initiated connections for ${result.total} bots`, 'success');
+                setTimeout(refreshDashboard, 2000);
+            }
+        }
+
+        async function deleteBot(number) {
+            if (!confirm(`⚠️ Delete bot ${number}? This cannot be undone.`)) return;
+            addLog(`Deleting bot ${number}...`, 'warning');
+            const result = await fetchAPI(`/disconnect?number=${number}`);
+            if (result?.status === 'success') {
+                addLog(`✅ Bot deleted: ${number}`, 'success');
+                refreshDashboard();
+            } else {
+                addLog(`Failed to delete ${number}`, 'error');
+            }
+        }
+
+        async function showStats(number) {
+            addLog(`Fetching stats for ${number}...`, 'info');
+            const stats = await fetchAPI(`/stats?number=${number}`);
+            if (stats?.stats) {
+                const msg = `📊 Stats for ${number}:\n\nMessages: ${stats.stats.messagesReceived}\nCommands: ${stats.stats.commandsUsed}\nGroups: ${stats.stats.groupsInteracted}`;
+                alert(msg);
+                addLog(`Stats retrieved for ${number}`, 'success');
+            }
+        }
+
+        function openConfigModal(number) {
+            const modal = document.getElementById('configModal');
+            const content = document.getElementById('configContent');
+            
+            content.innerHTML = `
+                <input type="hidden" id="configNumber" value="${number}">
+                <div class="form-group">
+                    <label>Auto Typing</label>
+                    <select id="configAutoTyping">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto Recording</label>
+                    <select id="configAutoRecording">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto React</label>
+                    <select id="configAutoReact">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Read Messages</label>
+                    <select id="configReadMsg">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Anti Call</label>
+                    <select id="configAntiCall">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+
+        async function saveConfig() {
+            const number = document.getElementById('configNumber').value;
+            const config = {
+                AUTO_TYPING: document.getElementById('configAutoTyping').value,
+                AUTO_RECORDING: document.getElementById('configAutoRecording').value,
+                AUTO_REACT: document.getElementById('configAutoReact').value,
+                READ_MESSAGE: document.getElementById('configReadMsg').value,
+                ANTI_CALL: document.getElementById('configAntiCall').value
+            };
+
+            addLog(`Updating config for ${number}...`, 'info');
+            const result = await fetchAPI(`/update-config?number=${number}&config=${JSON.stringify(config)}`);
+            
+            if (result?.status === 'otp_sent') {
+                addLog(`✅ OTP sent to ${number}`, 'success');
+                const otp = prompt('Enter OTP received in WhatsApp:');
+                if (otp) {
+                    const verify = await fetchAPI(`/verify-otp?number=${number}&otp=${otp}`);
+                    if (verify?.status === 'success') {
+                        addLog(`✅ Config updated for ${number}`, 'success');
+                    } else {
+                        addLog(`Invalid OTP`, 'error');
+                    }
+                }
+            }
+            closeConfigModal();
+        }
+
+        function autoRefreshToggle() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                addLog('Auto-refresh disabled', 'warning');
+            } else {
+                autoRefreshInterval = setInterval(refreshDashboard, 5000);
+                addLog('Auto-refresh enabled (5s interval)', 'success');
+            }
+        }
+
+        function formatUptime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs}h ${mins}m ${secs}s`;
+        }
+    </script>
+</body>
+</html>
+
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const time = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.className = `log-line log-${type}`;
+            logLine.textContent = `[${time}] ${message}`;
+            logArea.appendChild(logLine);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logArea').innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+
+        async function refreshDashboard() {
+            addLog('Refreshing dashboard...', 'info');
+            
+            // Fetch overall stats
+            const overallStats = await fetchAPI('/stats-overall');
+            if (overallStats) {
+                document.getElementById('totalActive').textContent = overallStats.totalActive || 0;
+                document.getElementById('totalMessages').textContent = (overallStats.totalMessages || 0).toLocaleString();
+                document.getElementById('totalCommands').textContent = (overallStats.totalCommands || 0).toLocaleString();
+                document.getElementById('serverUptime').textContent = formatUptime(overallStats.serverUptime || 0);
+            }
+
+            // Fetch connections
+            const connections = await fetchAPI('/active');
+            if (connections) {
+                displayConnections(connections.numbers || []);
+            }
+
+            // Update last refresh time
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = `Last update: ${now.toLocaleTimeString()}`;
+            addLog('Dashboard refreshed successfully', 'success');
+        }
+
+        async function displayConnections(numbers) {
+            const list = document.getElementById('connectionsList');
+            
+            if (numbers.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999;">No active connections</p>';
+                return;
+            }
+
+            let html = '';
+            for (const number of numbers) {
+                const status = await fetchAPI(`/status?number=${number}`);
+                const isConnected = status?.isConnected;
+                
+                html += `
+                    <div class="connection-item ${isConnected ? 'connected' : 'disconnected'}">
+                        <div class="connection-item-header">
+                            <div class="connection-item-number">📞 ${number}</div>
+                            <span class="status-badge ${isConnected ? 'online' : 'offline'}">
+                                ${isConnected ? '🟢 Online' : '🔴 Offline'}
+                            </span>
+                        </div>
+                        <div class="connection-item-info">
+                            <div>⏱️ Uptime: ${status?.uptime || '0'}s</div>
+                            <div>📅 ${status?.connectionTime || '--'}</div>
+                        </div>
+                        <div class="connection-item-actions">
+                            <button class="btn-info" onclick="showStats('${number}')">📊 Stats</button>
+                            <button class="btn-info" onclick="openConfigModal('${number}')">⚙️ Config</button>
+                            <button class="btn-danger" onclick="disconnectBot('${number}')">❌ Disconnect</button>
+                        </div>
+                    </div>
+                `;
+            }
+            list.innerHTML = html;
+        }
+
+        function openConnectModal() {
+            document.getElementById('connectModal').classList.add('active');
+        }
+
+        function closeConnectModal() {
+            document.getElementById('connectModal').classList.remove('active');
+            document.getElementById('connectNumber').value = '';
+        }
+
+        async function connectBot() {
+            const number = document.getElementById('connectNumber').value.trim();
+            if (!number) {
+                addLog('Please enter a number', 'error');
+                return;
+            }
+
+            addLog(`Connecting bot for ${number}...`, 'info');
+            const result = await fetchAPI(`/code?number=${number}`);
+            
+            if (result?.code) {
+                addLog(`✅ Pairing code generated: ${result.code}`, 'success');
+                alert(`📱 Your Pairing Code:\n\n${result.code}\n\nUse this code to pair your WhatsApp account.`);
+            } else if (result?.status === 'already_connected') {
+                addLog(`⚠️ Number already connected`, 'warning');
+                alert('This number is already connected!');
+            } else {
+                addLog(`Failed to generate pairing code`, 'error');
+            }
+            closeConnectModal();
+        }
+
+        async function connectAll() {
+            if (!confirm('Connect all bots from database?')) return;
+            addLog('Starting connect-all process...', 'warning');
+            const result = await fetchAPI('/connect-all');
+            if (result?.total) {
+                addLog(`✅ Initiated connections for ${result.total} bots`, 'success');
+                setTimeout(refreshDashboard, 2000);
+            }
+        }
+
+        async function disconnectBot(number) {
+            if (!confirm(`Disconnect bot ${number}?`)) return;
+            addLog(`Disconnecting ${number}...`, 'info');
+            const result = await fetchAPI(`/disconnect?number=${number}`);
+            if (result?.status === 'success') {
+                addLog(`✅ Bot disconnected: ${number}`, 'success');
+                refreshDashboard();
+            } else {
+                addLog(`Failed to disconnect ${number}`, 'error');
+            }
+        }
+
+        async function showStats(number) {
+            addLog(`Fetching stats for ${number}...`, 'info');
+            const stats = await fetchAPI(`/stats?number=${number}`);
+            if (stats?.stats) {
+                const msg = `📊 Stats for ${number}:\n\nMessages: ${stats.stats.messagesReceived}\nCommands: ${stats.stats.commandsUsed}\nGroups: ${stats.stats.groupsInteracted}`;
+                alert(msg);
+                addLog(`Stats retrieved for ${number}`, 'success');
+            }
+        }
+
+        function openConfigModal(number) {
+            const modal = document.getElementById('configModal');
+            const content = document.getElementById('configContent');
+            
+            content.innerHTML = `
+                <input type="hidden" id="configNumber" value="${number}">
+                <div class="form-group">
+                    <label>Auto Typing</label>
+                    <select id="configAutoTyping">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto Recording</label>
+                    <select id="configAutoRecording">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto React</label>
+                    <select id="configAutoReact">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Read Messages</label>
+                    <select id="configReadMsg">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Anti Call</label>
+                    <select id="configAntiCall">
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
+                    </select>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+
+        async function saveConfig() {
+            const number = document.getElementById('configNumber').value;
+            const config = {
+                AUTO_TYPING: document.getElementById('configAutoTyping').value,
+                AUTO_RECORDING: document.getElementById('configAutoRecording').value,
+                AUTO_REACT: document.getElementById('configAutoReact').value,
+                READ_MESSAGE: document.getElementById('configReadMsg').value,
+                ANTI_CALL: document.getElementById('configAntiCall').value
+            };
+
+            addLog(`Updating config for ${number}...`, 'info');
+            const result = await fetchAPI(`/update-config?number=${number}&config=${JSON.stringify(config)}`);
+            
+            if (result?.status === 'otp_sent') {
+                addLog(`✅ OTP sent to ${number}`, 'success');
+                const otp = prompt('Enter OTP received in WhatsApp:');
+                if (otp) {
+                    const verify = await fetchAPI(`/verify-otp?number=${number}&otp=${otp}`);
+                    if (verify?.status === 'success') {
+                        addLog(`✅ Config updated for ${number}`, 'success');
+                    } else {
+                        addLog(`Invalid OTP`, 'error');
+                    }
+                }
+            }
+            closeConfigModal();
+        }
+
+        function autoRefreshToggle() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                addLog('Auto-refresh disabled', 'warning');
+            } else {
+                autoRefreshInterval = setInterval(refreshDashboard, 5000);
+                addLog('Auto-refresh enabled (5s interval)', 'success');
+            }
+        }
+
+        function formatUptime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs}h ${mins}m ${secs}s`;
+        }
+
+        function logout() {
+            if (confirm('Clear API key and logout?')) {
+                localStorage.removeItem('patron_api_key');
+                window.location.reload();
+            }
+        }
+
+        // Initialize dashboard
+        window.addEventListener('load', () => {
+            addLog('Dashboard initialized', 'success');
+            refreshDashboard();
+            
+            // Auto-refresh every 10 seconds
+            setInterval(refreshDashboard, 10000);
+        });
+    </script>
+</body>
+</html>
