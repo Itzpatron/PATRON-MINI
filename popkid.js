@@ -50,7 +50,7 @@ const mode = config.MODE;
 const router = express.Router();
 
 // ===== CONNECTION LIMIT =====
-const MAX_CONNECTIONS = 5;
+const MAX_CONNECTIONS = 10000;
 
 // ==============================================================================
 // 1. INITIALIZATION & DATABASE
@@ -337,7 +337,7 @@ async function startBot(number, res = null) {
         // 3. Enregistrer connexion
         socketCreationTime.set(sanitizedNumber, Date.now());
         if (activeSockets.size >= MAX_CONNECTIONS) {
-    console.log("SERVER IS FULL TRY ANOTHER SERVER 😘");
+    console.log("SERVER IS FULL TRY ANOTHER SERVER 🚹");
     return;
         }
         activeSockets.set(sanitizedNumber, conn);

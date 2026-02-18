@@ -10,7 +10,7 @@ cmd({
     try {
         const jid = m.chat;
 
-        const baseUrl = "http://157.245.126.199:3015"; // fallback URL
+        const baseUrl = "https://patron-mini.up.railway.app"; // fallback URL
 
         // 1️⃣ Repo info message
         const repoMessage = `
@@ -28,7 +28,7 @@ cmd({
    \`.pair 234XXXXXXXXX\`
         `.trim();
 
-        await reply(repoMessage);
+        await m.reply(repoMessage);
 
         // 2️⃣ Send your vCard with small caps name + 🚹
         const vcard = `
