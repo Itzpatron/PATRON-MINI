@@ -10,80 +10,109 @@ let isLoggedIn = false;
 
 function login() {
     try {
-        console.log('Login function called');
+        console.log('=== LOGIN ATTEMPT STARTED ===');
         const passwordInput = document.getElementById('passwordInput');
+        console.log('Password input element:', passwordInput);
         
         if (!passwordInput) {
-            console.error('Password input element not found');
-            alert('Error: Password input element not found');
+            console.error('❌ Password input element not found');
+            showError('❌ Error: Password input element not found');
             return;
         }
         
-        const passwordValue = passwordInput.value;
-        console.log('Password input found, value length:', passwordValue.length);
+        const passwordValue = passwordInput.value.trim();
+        console.log('Password length:', passwordValue.length);
         
         if (!passwordValue) {
-            console.log('Password is empty');
-            showError('Please enter a password');
+            console.warn('⚠️ Password field is empty');
+            showError('⚠️ Please enter a password');
+            passwordInput.focus();
             return;
         }
 
         const expectedPassword = 'maximus0000';
+        console.log('Expected password:', expectedPassword);
+        console.log('Entered password:', '**'.repeat(Math.max(passwordValue.length / 2, 1)));
+        console.log('Password match:', passwordValue === expectedPassword);
 
         if (passwordValue === expectedPassword) {
-            console.log('Password correct, logging in...');
+            console.log('✅ Password correct!');
             localStorage.setItem('patron_session', 'authenticated');
+            localStorage.setItem('loginTime', new Date().toISOString());
             passwordInput.value = '';
             showDashboard();
-            addLog('Admin logged in successfully', 'success');
+            console.log('Dashboard shown successfully');
+            addLog('✅ Admin logged in successfully', 'success');
             refreshDashboard();
-            setInterval(refreshDashboard, 10000);
+            const refreshInterval = setInterval(refreshDashboard, 10000);
+            console.log('Auto-refresh started with interval:', refreshInterval);
         } else {
-            console.log('Password incorrect');
-            showError('Invalid password');
+            console.warn('❌ Password incorrect');
+            showError('❌ Invalid password');
             passwordInput.value = '';
+            passwordInput.focus();
         }
     } catch (error) {
-        console.error('Login error:', error);
-        alert('Login error: ' + error.message);
+        console.error('❌ Login error:', error);
+        console.error('Stack:', error.stack);
+        showError('❌ Login error: ' + error.message);
     }
 }
 
 function showError(message) {
     try {
+        console.log('📢 Showing error message:', message);
         const errorDiv = document.getElementById('errorMessage');
+        
         if (errorDiv) {
             errorDiv.textContent = message;
             errorDiv.classList.add('show');
-            console.log('Error shown:', message);
+            console.log('✅ Error message displayed');
+            
+            // Remove after 4 seconds
             setTimeout(() => {
                 errorDiv.classList.remove('show');
-            }, 3000);
+                console.log('Error message hidden');
+            }, 4000);
         } else {
-            console.error('Error div not found');
+            console.error('❌ Error div with id "errorMessage" not found');
+            // Fallback to alert
             alert(message);
         }
     } catch (error) {
-        console.error('Error showing error message:', error);
-        alert(message);
+        console.error('❌ Error displaying error message:', error);
+        alert(message); // Final fallback
     }
 }
 
 function showDashboard() {
     try {
+        console.log('🎯 Attempting to show dashboard');
         isLoggedIn = true;
+        
         const loginContainer = document.getElementById('loginContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         
-        if (loginContainer) {
-            loginContainer.style.display = 'none';
+        console.log('Login container found:', !!loginContainer);
+        console.log('Dashboard container found:', !!dashboardContainer);
+        
+        if (!loginContainer || !dashboardContainer) {
+            console.error('❌ Required containers not found in DOM');
+            return;
         }
-        if (dashboardContainer) {
-            dashboardContainer.classList.remove('dashboard-hidden');
-        }
-        console.log('Dashboard showed successfully');
+        
+        // Hide login
+        loginContainer.style.display = 'none';
+        console.log('✅ Login container hidden');
+        
+        // Show dashboard
+        dashboardContainer.classList.remove('dashboard-hidden');
+        dashboardContainer.style.display = 'block';
+        console.log('✅ Dashboard container displayed');
+        
     } catch (error) {
-        console.error('Error showing dashboard:', error);
+        console.error('❌ Error showing dashboard:', error);
+        console.error('Stack:', error.stack);
     }
 }
 
@@ -376,19 +405,49 @@ function formatUptime(seconds) {
 // ============== INITIALIZATION ==============
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Dashboard script loaded');
+    console.log('Dashboard script loaded - DOMContentLoaded');
+    
+    // Attach login button click event
+    const loginBtn = document.querySelector('.login-btn');
+    if (loginBtn) {
+        console.log('Login button found, attaching event listener');
+        loginBtn.addEventListener('click', (e) => {
+            console.log('Login button clicked via addEventListener');
+            e.preventDefault();
+            login();
+        });
+    } else {
+        console.error('Login button not found in DOM');
+    }
+    
+    // Attach Enter key listener to password input
+    const passwordInput = document.getElementById('passwordInput');
+    if (passwordInput) {
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                console.log('Enter key pressed in password field');
+                login();
+            }
+        });
+    }
+    
     const sessionToken = localStorage.getItem('patron_session');
     if (sessionToken) {
+        console.log('Session token found, showing dashboard');
         showDashboard();
         addLog('Dashboard loaded', 'success');
         refreshDashboard();
         setInterval(refreshDashboard, 10000);
+    } else {
+        console.log('No session token found, showing login');
     }
 });
 
 window.addEventListener('load', () => {
+    console.log('Window load event fired');
     const sessionToken = localStorage.getItem('patron_session');
     if (sessionToken) {
+        console.log('Session token found on window load');
         showDashboard();
         addLog('Dashboard loaded', 'success');
         refreshDashboard();
