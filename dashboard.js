@@ -130,15 +130,50 @@ function logout() {
 
 async function fetchAPI(endpoint) {
     try {
-        const response = await fetch(`${API_BASE}${endpoint}`);
+        console.log(`📡 Fetching API: ${endpoint}`);
+        
+        // Add timestamp to prevent caching
+        const separator = endpoint.includes('?') ? '&' : '?';
+        const url = `${API_BASE}${endpoint}${separator}t=${Date.now()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate, private',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            },
+            cache: 'no-store'
+        });
+        
+        console.log(`Response Status: ${response.status} for ${endpoint}`);
+        
+        if (response.status === 304) {
+            console.warn('⚠️ Got 304 Not Modified - retrying without cache');
+            // Retry without any cache headers
+            const retryResponse = await fetch(url, { cache: 'reload' });
+            if (!retryResponse.ok) throw new Error(`HTTP ${retryResponse.status}`);
+            const data = await retryResponse.json();
+            console.log('✅ Retry successful:', data);
+            return data;
+        }
+        
         if (response.status === 401) {
+            console.error('❌ Unauthorized (401)');
             logout();
             throw new Error('Unauthorized');
         }
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log(`✅ API Response from ${endpoint}:`, data);
+        return data;
     } catch (error) {
-        addLog(`Failed to fetch ${endpoint}: ${error.message}`, 'error');
+        console.error(`❌ API Error on ${endpoint}:`, error);
+        addLog(`❌ Failed to fetch ${endpoint}: ${error.message}`, 'error');
         return null;
     }
 }
@@ -211,28 +246,77 @@ async function displayConnections(numbers) {
 
     let html = '';
     for (const number of numbers) {
-        const status = await fetchAPI(`/status?number=${number}`);
-        const isConnected = status?.isConnected;
-        
-        html += `
-            <div class="connection-item ${isConnected ? 'connected' : 'disconnected'}">
-                <div class="connection-item-header">
-                    <div class="connection-item-number">📞 ${number}</div>
-                    <span class="status-badge ${isConnected ? 'online' : 'offline'}">
-                        ${isConnected ? '🟢 Online' : '🔴 Offline'}
-                    </span>
+        try {
+            console.log(`Fetching status for number: ${number}`);
+            const status = await fetchAPI(`/status?number=${number}`);
+            console.log(`Status response for ${number}:`, status);
+            
+            if (!status) {
+                console.warn(`No response for ${number}, marking as offline`);
+                html += `
+                    <div class="connection-item disconnected">
+                        <div class="connection-item-header">
+                            <div class="connection-item-number">📞 ${number}</div>
+                            <span class="status-badge offline">
+                                ❌ Failed to fetch status
+                            </span>
+                        </div>
+                        <div class="connection-item-info">
+                            <div>⏱️ Uptime: --</div>
+                            <div>📅 --</div>
+                        </div>
+                        <div class="connection-item-actions">
+                            <button class="btn-danger" onclick="deleteBot('${number}')">🗑️ Delete</button>
+                        </div>
+                    </div>
+                `;
+                continue;
+            }
+            
+            const isConnected = status.isConnected === true;
+            const uptime = status.uptime ? formatUptime(status.uptime) : '0s';
+            
+            console.log(`Number ${number} - Connected: ${isConnected}, Uptime: ${uptime}`);
+            
+            html += `
+                <div class="connection-item ${isConnected ? 'connected' : 'disconnected'}">
+                    <div class="connection-item-header">
+                        <div class="connection-item-number">📞 ${number}</div>
+                        <span class="status-badge ${isConnected ? 'online' : 'offline'}">
+                            ${isConnected ? '🟢 Online' : '🔴 Offline'}
+                        </span>
+                    </div>
+                    <div class="connection-item-info">
+                        <div>⏱️ Uptime: ${uptime}</div>
+                        <div>📅 ${status.connectionTime || '--'}</div>
+                    </div>
+                    <div class="connection-item-actions">
+                        <button class="btn-info" onclick="showStats('${number}')">📊 Stats</button>
+                        <button class="btn-info" onclick="openConfigModal('${number}')">⚙️ Config</button>
+                        <button class="btn-danger" onclick="deleteBot('${number}')">🗑️ Delete</button>
+                    </div>
                 </div>
-                <div class="connection-item-info">
-                    <div>⏱️ Uptime: ${status?.uptime || '0'}s</div>
-                    <div>📅 ${status?.connectionTime || '--'}</div>
+            `;
+        } catch (error) {
+            console.error(`Error fetching status for ${number}:`, error);
+            html += `
+                <div class="connection-item disconnected">
+                    <div class="connection-item-header">
+                        <div class="connection-item-number">📞 ${number}</div>
+                        <span class="status-badge offline">
+                            ⚠️ Error fetching
+                        </span>
+                    </div>
+                    <div class="connection-item-info">
+                        <div>⏱️ Uptime: --</div>
+                        <div>📅 --</div>
+                    </div>
+                    <div class="connection-item-actions">
+                        <button class="btn-danger" onclick="deleteBot('${number}')">🗑️ Delete</button>
+                    </div>
                 </div>
-                <div class="connection-item-actions">
-                    <button class="btn-info" onclick="showStats('${number}')">📊 Stats</button>
-                    <button class="btn-info" onclick="openConfigModal('${number}')">⚙️ Config</button>
-                    <button class="btn-danger" onclick="deleteBot('${number}')">🗑️ Delete</button>
-                </div>
-            </div>
-        `;
+            `;
+        }
     }
     list.innerHTML = html;
 }

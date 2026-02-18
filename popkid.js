@@ -834,6 +834,9 @@ router.get('/code', async (req, res) => {
 
 // Route pour vérifier statut
 router.get('/status', async (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     const { number } = req.query;
     
     if (!number) {
@@ -844,7 +847,7 @@ router.get('/status', async (req, res) => {
                 number: num,
                 status: 'connected',
                 connectionTime: status.connectionTime,
-                uptime: `${status.uptime} seconds`
+                uptime: status.uptime
             };
         });
         
@@ -854,13 +857,16 @@ router.get('/status', async (req, res) => {
         });
     }
     
-    const connectionStatus = getConnectionStatus(number);
+    const sanitizedNumber = number.replace(/[^0-9]/g, '');
+    const connectionStatus = getConnectionStatus(sanitizedNumber);
+    
+    console.log(`Status check for ${number} (sanitized: ${sanitizedNumber}):`, connectionStatus);
     
     res.json({
-        number: number,
+        number: sanitizedNumber,
         isConnected: connectionStatus.isConnected,
         connectionTime: connectionStatus.connectionTime,
-        uptime: `${connectionStatus.uptime} seconds`,
+        uptime: connectionStatus.uptime,
         message: connectionStatus.isConnected 
             ? 'Number is actively connected' 
             : 'Number is not connected'
@@ -912,6 +918,9 @@ router.get('/disconnect', async (req, res) => {
 
 // Route pour voir numéros actifs
 router.get('/active', (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.json({
         count: activeSockets.size,
         numbers: Array.from(activeSockets.keys())
@@ -920,6 +929,9 @@ router.get('/active', (req, res) => {
 
 // Route ping
 router.get('/ping', (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     res.json({
         status: 'active',
         message: 'patron mini is running',
@@ -930,6 +942,7 @@ router.get('/ping', (req, res) => {
 
 // Route pour reconnecter tous
 router.get('/connect-all', async (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     try {
         const numbers = await getAllNumbersFromMongoDB();
         if (numbers.length === 0) {
@@ -1041,6 +1054,9 @@ router.get('/verify-otp', async (req, res) => {
 
 // Route pour statistiques
 router.get('/stats', async (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     const { number } = req.query;
     
     if (!number) {
@@ -1066,6 +1082,7 @@ router.get('/stats', async (req, res) => {
 
 // Route pour statistiques globales du serveur
 router.get('/stats-overall', async (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     try {
         let totalMessages = 0;
         let totalCommands = 0;
