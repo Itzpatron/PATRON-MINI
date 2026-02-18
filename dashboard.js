@@ -9,40 +9,82 @@ let isLoggedIn = false;
 // ============== LOGIN FUNCTIONS ==============
 
 function login() {
-    const password = document.getElementById('passwordInput').value;
-    if (!password) {
-        showError('Please enter a password');
-        return;
-    }
+    try {
+        console.log('Login function called');
+        const passwordInput = document.getElementById('passwordInput');
+        
+        if (!passwordInput) {
+            console.error('Password input element not found');
+            alert('Error: Password input element not found');
+            return;
+        }
+        
+        const passwordValue = passwordInput.value;
+        console.log('Password input found, value length:', passwordValue.length);
+        
+        if (!passwordValue) {
+            console.log('Password is empty');
+            showError('Please enter a password');
+            return;
+        }
 
-    const expectedPassword = 'maximus0000';
+        const expectedPassword = 'maximus0000';
 
-    if (password === expectedPassword) {
-        localStorage.setItem('patron_session', 'authenticated');
-        document.getElementById('passwordInput').value = '';
-        showDashboard();
-        addLog('Admin logged in successfully', 'success');
-        refreshDashboard();
-        setInterval(refreshDashboard, 10000);
-    } else {
-        showError('Invalid password');
-        document.getElementById('passwordInput').value = '';
+        if (passwordValue === expectedPassword) {
+            console.log('Password correct, logging in...');
+            localStorage.setItem('patron_session', 'authenticated');
+            passwordInput.value = '';
+            showDashboard();
+            addLog('Admin logged in successfully', 'success');
+            refreshDashboard();
+            setInterval(refreshDashboard, 10000);
+        } else {
+            console.log('Password incorrect');
+            showError('Invalid password');
+            passwordInput.value = '';
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login error: ' + error.message);
     }
 }
 
 function showError(message) {
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = message;
-    errorDiv.classList.add('show');
-    setTimeout(() => {
-        errorDiv.classList.remove('show');
-    }, 3000);
+    try {
+        const errorDiv = document.getElementById('errorMessage');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            console.log('Error shown:', message);
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        } else {
+            console.error('Error div not found');
+            alert(message);
+        }
+    } catch (error) {
+        console.error('Error showing error message:', error);
+        alert(message);
+    }
 }
 
 function showDashboard() {
-    isLoggedIn = true;
-    document.getElementById('loginContainer').style.display = 'none';
-    document.getElementById('dashboardContainer').classList.remove('dashboard-hidden');
+    try {
+        isLoggedIn = true;
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        
+        if (loginContainer) {
+            loginContainer.style.display = 'none';
+        }
+        if (dashboardContainer) {
+            dashboardContainer.classList.remove('dashboard-hidden');
+        }
+        console.log('Dashboard showed successfully');
+    } catch (error) {
+        console.error('Error showing dashboard:', error);
+    }
 }
 
 function logout() {
@@ -75,18 +117,33 @@ async function fetchAPI(endpoint) {
 // ============== LOGGING FUNCTIONS ==============
 
 function addLog(message, type = 'info') {
-    const logArea = document.getElementById('logArea');
-    const time = new Date().toLocaleTimeString();
-    const logLine = document.createElement('div');
-    logLine.className = `log-line log-${type}`;
-    logLine.textContent = `[${time}] ${message}`;
-    logArea.appendChild(logLine);
-    logArea.scrollTop = logArea.scrollHeight;
+    try {
+        const logArea = document.getElementById('logArea');
+        if (!logArea) {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            return;
+        }
+        const time = new Date().toLocaleTimeString();
+        const logLine = document.createElement('div');
+        logLine.className = `log-line log-${type}`;
+        logLine.textContent = `[${time}] ${message}`;
+        logArea.appendChild(logLine);
+        logArea.scrollTop = logArea.scrollHeight;
+    } catch (error) {
+        console.error('Error adding log:', error);
+    }
 }
 
 function clearLogs() {
-    document.getElementById('logArea').innerHTML = '';
-    addLog('Logs cleared', 'info');
+    try {
+        const logArea = document.getElementById('logArea');
+        if (logArea) {
+            logArea.innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+    } catch (error) {
+        console.error('Error clearing logs:', error);
+    }
 }
 
 // ============== DASHBOARD REFRESH ==============
@@ -317,6 +374,17 @@ function formatUptime(seconds) {
 }
 
 // ============== INITIALIZATION ==============
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Dashboard script loaded');
+    const sessionToken = localStorage.getItem('patron_session');
+    if (sessionToken) {
+        showDashboard();
+        addLog('Dashboard loaded', 'success');
+        refreshDashboard();
+        setInterval(refreshDashboard, 10000);
+    }
+});
 
 window.addEventListener('load', () => {
     const sessionToken = localStorage.getItem('patron_session');
