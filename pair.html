@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚹 PATRON MINI 🚹</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg1:#0f1020;
+    --bg2:#1a1b2e;
+    --accent:#7aa2ff;
+    --accent2:#c77dff;
+    --soft:#9be7ff;
+    --danger:#ff7a7a;
+    --success:#7aff9a;
+    --glass:rgba(255,255,255,0.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:#fff;
+    overflow:hidden;
+}
+
+/* soft floating blobs */
+body::before, body::after{
+    content:"";
+    position:absolute;
+    width:300px;height:300px;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:.4;
+    z-index:-1;
+}
+body::before{background:var(--accent); top:10%; left:5%;}
+body::after{background:var(--accent2); bottom:10%; right:5%;}
+
+.card{
+    width:90%;
+    max-width:400px;
+    background:var(--glass);
+    backdrop-filter:blur(14px);
+    border-radius:22px;
+    padding:28px 22px;
+    box-shadow:0 20px 40px rgba(0,0,0,.4);
+    text-align:center;
+    border:1px solid rgba(255,255,255,0.15);
+    position:relative;
+}
+
+h1{
+    font-size:1.9rem;
+    font-weight:700;
+    margin-bottom:6px;
+    background:linear-gradient(90deg,var(--soft),var(--accent2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.status{
+    font-size:.8rem;
+    letter-spacing:1px;
+    color:#cfd3ff;
+    margin-bottom:22px;
+}
+
+.input-wrap{
+    background:rgba(255,255,255,0.06);
+    border-radius:14px;
+    padding:2px;
+    margin-bottom:16px;
+}
+
+input{
+    width:100%;
+    border:none;
+    outline:none;
+    padding:14px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.4);
+    color:#fff;
+    text-align:center;
+    font-size:1rem;
+}
+
+input::placeholder{
+    color:rgba(255,255,255,0.5);
+}
+
+button{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#000;
+    transition:.3s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 20px rgba(124,162,255,.4);
+}
+
+#result{
+    margin-top:20px;
+    min-height:60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    text-align:center;
+}
+
+.code-display{
+    padding:10px 18px;
+    border-radius:12px;
+    border:1px dashed var(--soft);
+    color:var(--soft);
+    font-weight:600;
+    letter-spacing:4px;
+    cursor:pointer;
+    transition:.2s;
+    position:relative;
+}
+
+.code-display:hover{
+    background:rgba(155,231,255,0.1);
+}
+
+.code-display::after{
+    content:"TAP TO COPY";
+    display:block;
+    font-size:.65rem;
+    opacity:.6;
+    margin-top:6px;
+    letter-spacing:1px;
+}
+
+.loader{
+    width:28px;
+    height:28px;
+    border:3px solid rgba(255,255,255,0.2);
+    border-top:3px solid var(--soft);
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+footer{
+    margin-top:18px;
+    font-size:.7rem;
+    color:rgba(255,255,255,0.5);
+    letter-spacing:1px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>PATRON-MINI</h1>
+    <div class="status">🚹 PAIR CODE 🚹</div>
+
+    <div class="input-wrap">
+        <input type="text" id="number" placeholder="2348133729715" autocomplete="off">
+    </div>
+
+    <button onclick="getCode()">✨ GET CODE ✨</button>
+
+    <div id="result"></div>
+
+    <footer>🚹 MADE BY PATRON 🚹</footer>
+</div>
+
+<script>
+async function getCode() {
+    const numberInput = document.getElementById("number");
+    const resDiv = document.getElementById("result");
+    const num = numberInput.value.replace(/[^0-9]/g, '');
+
+    if (!num) {
+        playSound('error');
+        resDiv.innerHTML = "<span style='color:var(--danger)'>Please enter a number 😊</span>";
+        return;
+    }
+
+    resDiv.innerHTML = '<div class="loader"></div><span style="font-size:.8rem;opacity:.7">Connecting... 😃</span>';
+
+    try {
+        const req = await fetch(`/code?number=${num}`);
+        const data = await req.json();
+
+        if (data.code) {
+            resDiv.innerHTML = `
+                <div style="font-size:.75rem;opacity:.7">PAIRING CODE</div>
+                <div class="code-display" onclick="copyCode('${data.code}')">${data.code}</div>
+            `;
+            playSound('success');
+        } else if (data.status === 'already_connected') {
+            resDiv.innerHTML = "<span style='color:var(--success)'>A mini bot is already connected to this number Please enter another number 🙂</span>";
+        } else {
+            resDiv.innerHTML = "<span style='color:var(--danger)'>[ERROR] CONNECTION FAILED</span>";
+        }
+    } catch (e) {
+        resDiv.innerHTML = "<span style='color:var(--danger)'>[CRITICAL] SERVER UNREACHABLE</span>";
+    }
+}
+
+function copyCodeAnywhere(code) {
+    // Try modern Clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code)
+            .then(() => showCopyFeedback())
+            .catch(() => fallbackCopy(code));
+    } else {
+        fallbackCopy(code);
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showCopyFeedback();
+        } catch (err) {
+            console.error('Fallback copy failed', err);
+            alert('Copy failed! Please copy manually.');
+        }
+        document.body.removeChild(textarea);
+    }
+
+    function showCopyFeedback() {
+        const display = document.querySelector('.code-display');
+        if (!display) return;
+
+        const originalText = display.innerText;
+        display.innerText = "COPIED 😊";
+        display.style.borderColor = "var(--success)";
+        display.style.color = "var(--success)";
+
+        setTimeout(() => {
+            display.innerText = originalText;
+            display.style.borderColor = "var(--soft)";
+            display.style.color = "var(--soft)";
+        }, 1500);
+    }
+}
+
+// Optional: Simple placeholder sound function
+function playSound(type) {
+    // You can add real sounds here later if you want
+}
+</script>
+
+</body>
+</html>
