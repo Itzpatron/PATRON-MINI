@@ -1062,6 +1062,40 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// Route pour statistiques globales du serveur
+router.get('/stats-overall', async (req, res) => {
+    try {
+        let totalMessages = 0;
+        let totalCommands = 0;
+        let totalGroups = 0;
+        
+        // Calculer stats pour tous les numéros actifs
+        for (const number of activeSockets.keys()) {
+            const stats = await getStatsForNumber(number);
+            if (stats) {
+                totalMessages += stats.messagesReceived || 0;
+                totalCommands += stats.commandsUsed || 0;
+                totalGroups += stats.groupsInteracted || 0;
+            }
+        }
+        
+        // Calculer serveur uptime
+        const processUptime = Math.floor(process.uptime());
+        
+        res.json({
+            totalActive: activeSockets.size,
+            totalMessages: totalMessages,
+            totalCommands: totalCommands,
+            totalGroups: totalGroups,
+            serverUptime: processUptime,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error getting overall stats:', error);
+        res.status(500).json({ error: 'Failed to get overall statistics' });
+    }
+});
+
 // ==============================================================================
 // 5. RECONNEXION AUTOMATIQUE AU DÉMARRAGE (non modifié)
 // ==============================================================================
