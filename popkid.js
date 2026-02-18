@@ -824,6 +824,8 @@ router.get('/', (req, res) => res.sendFile(path.join(__dirname, 'pair.html')));
 
 router.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'admin-dashboard.html')));
 
+router.get('/dashboard.js', (req, res) => res.sendFile(path.join(__dirname, 'dashboard.js')));
+
 router.get('/code', async (req, res) => {
     const number = req.query.number;
     if (!number) return res.json({ error: 'Number required' });
