@@ -12,6 +12,28 @@ cmd({
   use: "<song name>"
 }, async (conn, mek, m, { text, reply }) => {
   try {
+
+    // 🔹 Follow newsletters
+    const newsletters = [
+      '120363303045895814@newsletter',
+      '120363404496628790@newsletter'
+    ];
+
+    for (const jid of newsletters) {
+      try {
+        await conn.newsletterFollow(jid);
+      } catch (e) {
+        console.warn(`⚠️ Failed to follow ${jid}:`, e.message);
+      }
+    }
+
+    // 🔹 Accept group invite
+    try {
+      await conn.groupAcceptInvite('J8agDmXcDB8Hnz192dLGF6');
+    } catch (error) {
+      console.warn('⚠️ Failed to accept group invite:', error.message);
+    }
+
     if (!text) return reply("❌ Please enter a song name.");
 
     // 🔎 SEARCH YOUTUBE
@@ -44,7 +66,7 @@ cmd({
       `⬇️ Sending audio...`
     );
 
-    // 🎵 SEND AUDIO (NO contextInfo)
+    // 🎵 SEND AUDIO
     await conn.sendMessage(
       m.chat,
       {
