@@ -670,7 +670,10 @@ async function startBot(number, res = null) {
                 }
                 const type = getContentType(mek.message);
                 const from = mek.key.remoteJid;
-                const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : [];
+const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage
+  || mek.message?.imageMessage?.contextInfo?.quotedMessage
+  || mek.message?.videoMessage?.contextInfo?.quotedMessage
+  || null;
                 const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : '';
                 
                 const isCmd = body.startsWith(config.PREFIX);
@@ -800,8 +803,22 @@ const l = reply; // sends in small caps automatically
                         } catch (e) { console.error(e); }
                     }
                 }
-                
-                // Execute Plugins
+                    conn.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
+        let quoted = message.m ? message.m : message;
+        let mime = (message.m || message).mimetype || '';
+        let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0];
+        const stream = await downloadContentFromMessage(quoted, messageType);
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk]);
+        }
+        let type = await FileType.fromBuffer(buffer);
+        let trueFileName = attachExtension ? (filename + '.' + type.ext) : filename;
+        await fs.writeFileSync(trueFileName, buffer);
+        return trueFileName;
+    };
+                    
+                    // Execute Plugins
 const cmdName = isCmd
     ? body.slice(config.PREFIX.length).trim().split(" ")[0].toLowerCase()
     : false;
@@ -829,6 +846,7 @@ try {
     await cmd.function(conn, mek, m, {
         from,
         quoted: mek,
+        quoted,
         body,
         isCmd,
         command: cmdName,

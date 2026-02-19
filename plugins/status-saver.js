@@ -1,68 +1,76 @@
-const { cmd } = require("../command");
+
+ const { cmd } = require("../command");
 
 cmd({
   pattern: "save",
-  alias: ["sendme", "send"],
-  desc: "Forwards quoted message back to user and saves WhatsApp status",
-  category: "utility",
-  filename: __filename
-}, async (client, message, match, { from }) => {
-  await client.sendMessage(message.key.remoteJid, {
+  alias: ["sv", "send"],
+  desc: "Download and forward a quoted message (text, media, sticker, doc)",
+  category: "info",
+  filename: __filename,
+}, async (conn, m, { isMe, reply }) => {
+   await client.sendMessage(message.key.remoteJid, {
     react: {
       text: "📤",
       key: message.key
     }
   });
-
   try {
-    let quotedMessage = match.quoted || message.reply_message;
-    if (!quotedMessage) {
-      return await client.sendMessage(from, {
-        text: "*🍁 Please reply to a message!*"
-      }, { quoted: message });
+    const quoted = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    if (!quoted) return reply("Reply to a message or media to download and save.");
+
+    const botNumber = conn.user.id;
+
+    // TEXT
+    if (quoted.conversation) {
+      return conn.sendMessage(botNumber, { text: quoted.conversation }, { quoted: m });
     }
 
-    const buffer = await quotedMessage.download();
-    const mtype = quotedMessage.mtype;
-    const options = { quoted: message };
-
-    const poweredBy = "\n\n> *© ᴘᴀᴛʀᴏɴ TᴇᴄʜX*";
-
-    let messageContent = {};
-    switch (mtype) {
-      case "imageMessage":
-        messageContent = {
-          image: buffer,
-          caption: (quotedMessage.text ? quotedMessage.text : "") + poweredBy,
-          mimetype: quotedMessage.mimetype || "image/jpeg"
-        };
-        break;
-      case "videoMessage":
-        messageContent = {
-          video: buffer,
-          caption: (quotedMessage.text ? quotedMessage.text : "") + poweredBy,
-          mimetype: quotedMessage.mimetype || "video/mp4"
-        };
-        break;
-      case "audioMessage":
-        messageContent = {
-          audio: buffer,
-          mimetype: "audio/mp4",
-          ptt: quotedMessage.ptt || false
-        };
-        break;
-      default:
-        return await client.sendMessage(from, {
-          text: "❌ Only image, video, and audio messages are supported"
-        }, { quoted: message });
+    // IMAGE
+    if (quoted.imageMessage) {
+      const caption = quoted.imageMessage.caption || "";
+      const imagePath = await conn.downloadAndSaveMediaMessage(quoted.imageMessage);
+      return conn.sendMessage(botNumber, { image: { url: imagePath }, caption }, { quoted: m });
     }
 
-    await client.sendMessage(from, messageContent, options);
+    // AUDIO
+    if (quoted.audioMessage) {
+      const audioPath = await conn.downloadAndSaveMediaMessage(quoted.audioMessage);
+      return conn.sendMessage(botNumber, {
+        audio: { url: audioPath },
+        mimetype: "audio/mpeg",
+      }, { quoted: m });
+    }
 
-  } catch (error) {
-    console.error("Save Command Error:", error);
-    await client.sendMessage(from, {
-      text: "❌ Error saving message:\n" + error.message
-    }, { quoted: message });
+    // VIDEO
+    if (quoted.videoMessage) {
+      const caption = quoted.videoMessage.caption || "";
+      const videoPath = await conn.downloadAndSaveMediaMessage(quoted.videoMessage);
+      return conn.sendMessage(botNumber, { video: { url: videoPath }, caption }, { quoted: m });
+    }
+
+    // STICKER
+    if (quoted.stickerMessage) {
+      const stickerPath = await conn.downloadAndSaveMediaMessage(quoted.stickerMessage);
+      return conn.sendMessage(botNumber, { sticker: { url: stickerPath } }, { quoted: m });
+    }
+
+    // DOCUMENT
+    if (quoted.documentMessage) {
+      const docPath = await conn.downloadAndSaveMediaMessage(quoted.documentMessage);
+      const fileName = quoted.documentMessage.fileName || "file";
+      const mimetype = quoted.documentMessage.mimetype || "application/octet-stream";
+
+      return conn.sendMessage(botNumber, {
+        document: { url: docPath },
+        mimetype,
+        fileName,
+      }, { quoted: m });
+    }
+
+    return reply("Unsupported message type.");
+
+  } catch (err) {
+    console.error(err);
+    reply("Error saving message.");
   }
 });

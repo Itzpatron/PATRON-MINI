@@ -15,8 +15,10 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, quoted, body, isCmd, command, args, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
     try {
+         await conn.sendMessage(m.key.remoteJid, {
+        react: { text: "📤", key: m.key }
+    });
         if (!isGroup) return reply("This command is for groups only.");
-        if (!isOwner) return reply("*_This command is for the owner only_*");
 
         let card = quoted || m; // Handle if quoted message exists
         let cmiggc = groupMetadata;
