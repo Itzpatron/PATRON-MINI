@@ -839,6 +839,9 @@ router.get('/status', async (req, res) => {
     res.set('Expires', '0');
     const { number } = req.query;
     
+    console.log(`📌 /status called with number: "${number}"`);
+    console.log(`📌 activeSockets keys: [${Array.from(activeSockets.keys()).join(', ')}]`);
+    
     if (!number) {
         // Retourner toutes les connexions actives
         const activeConnections = Array.from(activeSockets.keys()).map(num => {
@@ -851,6 +854,7 @@ router.get('/status', async (req, res) => {
             };
         });
         
+        console.log(`📌 Returning all connections (${activeConnections.length}):`, activeConnections);
         return res.json({
             totalActive: activeSockets.size,
             connections: activeConnections
@@ -858,9 +862,12 @@ router.get('/status', async (req, res) => {
     }
     
     const sanitizedNumber = number.replace(/[^0-9]/g, '');
+    console.log(`📌 Sanitized number: "${number}" -> "${sanitizedNumber}"`);
+    console.log(`📌 Checking if "${sanitizedNumber}" is in activeSockets: ${activeSockets.has(sanitizedNumber)}`);
+    
     const connectionStatus = getConnectionStatus(sanitizedNumber);
     
-    console.log(`Status check for ${number} (sanitized: ${sanitizedNumber}):`, connectionStatus);
+    console.log(`📌 Connection status for ${sanitizedNumber}:`, connectionStatus);
     
     res.json({
         number: sanitizedNumber,
@@ -921,9 +928,13 @@ router.get('/active', (req, res) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
+    
+    const numbers = Array.from(activeSockets.keys());
+    console.log(`📌 /active called - Found ${numbers.length} active sockets:`, numbers);
+    
     res.json({
         count: activeSockets.size,
-        numbers: Array.from(activeSockets.keys())
+        numbers: numbers
     });
 });
 
@@ -1082,15 +1093,21 @@ router.get('/stats', async (req, res) => {
 
 // Route pour statistiques globales du serveur
 router.get('/stats-overall', async (req, res) => {
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     try {
+        console.log(`📊 /stats-overall called - Active connections: ${activeSockets.size}`);
+        
         let totalMessages = 0;
         let totalCommands = 0;
         let totalGroups = 0;
         
         // Calculer stats pour tous les numéros actifs
         for (const number of activeSockets.keys()) {
+            console.log(`📊 Fetching stats for ${number}`);
             const stats = await getStatsForNumber(number);
+            console.log(`📊 Stats for ${number}:`, stats);
             if (stats) {
                 totalMessages += stats.messagesReceived || 0;
                 totalCommands += stats.commandsUsed || 0;
@@ -1101,14 +1118,17 @@ router.get('/stats-overall', async (req, res) => {
         // Calculer serveur uptime
         const processUptime = Math.floor(process.uptime());
         
-        res.json({
+        const result = {
             totalActive: activeSockets.size,
             totalMessages: totalMessages,
             totalCommands: totalCommands,
             totalGroups: totalGroups,
             serverUptime: processUptime,
             timestamp: new Date().toISOString()
-        });
+        };
+        
+        console.log(`📊 Final stats result:`, result);
+        res.json(result);
     } catch (error) {
         console.error('Error getting overall stats:', error);
         res.status(500).json({ error: 'Failed to get overall statistics' });

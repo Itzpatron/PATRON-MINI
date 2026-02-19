@@ -214,26 +214,41 @@ function clearLogs() {
 
 async function refreshDashboard() {
     addLog('Refreshing dashboard...', 'info');
+    console.log('🔄 Dashboard refresh started');
     
     // Fetch overall stats
     const overallStats = await fetchAPI('/stats-overall');
+    console.log('📊 Overall stats:', overallStats);
     if (overallStats) {
-        document.getElementById('totalActive').textContent = overallStats.totalActive || 0;
-        document.getElementById('totalMessages').textContent = (overallStats.totalMessages || 0).toLocaleString();
-        document.getElementById('totalCommands').textContent = (overallStats.totalCommands || 0).toLocaleString();
-        document.getElementById('serverUptime').textContent = formatUptime(overallStats.serverUptime || 0);
+        const totalActive = overallStats.totalActive || 0;
+        const totalMessages = overallStats.totalMessages || 0;
+        const totalCommands = overallStats.totalCommands || 0;
+        const serverUptime = overallStats.serverUptime || 0;
+        
+        console.log(`Stats - Active: ${totalActive}, Messages: ${totalMessages}, Commands: ${totalCommands}, Uptime: ${serverUptime}s`);
+        
+        document.getElementById('totalActive').textContent = totalActive;
+        document.getElementById('totalMessages').textContent = totalMessages.toLocaleString();
+        document.getElementById('totalCommands').textContent = totalCommands.toLocaleString();
+        document.getElementById('serverUptime').textContent = formatUptime(serverUptime);
+    } else {
+        console.error('❌ Failed to fetch overall stats');
     }
 
     // Fetch connections
     const connections = await fetchAPI('/active');
+    console.log('🤖 Active connections response:', connections);
     if (connections) {
+        console.log(`Found ${connections.count || 0} active connections:`, connections.numbers);
         displayConnections(connections.numbers || []);
+    } else {
+        console.error('❌ Failed to fetch active connections');
     }
 
     // Update last refresh time
     const now = new Date();
     document.getElementById('lastUpdate').textContent = `Last update: ${now.toLocaleTimeString()}`;
-    addLog('Dashboard refreshed successfully', 'success');
+    addLog('✅ Dashboard refreshed successfully', 'success');
 }
 
 async function displayConnections(numbers) {
