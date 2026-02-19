@@ -97,14 +97,23 @@ function isNumberAlreadyConnected(number) {
 function getConnectionStatus(number) {
     const sanitizedNumber = number.replace(/[^0-9]/g, '');
     const isConnected = activeSockets.has(sanitizedNumber);
-    const connectionTime = socketCreationTime.get(sanitizedNumber);
+    let connectionTime = socketCreationTime.get(sanitizedNumber);
+    
+    // CRITICAL FIX: If connected but no creation time, set it NOW
+    if (isConnected && !connectionTime) {
+        console.log(`🚨 CRITICAL: ${sanitizedNumber} is in activeSockets but NOT in socketCreationTime!`);
+        console.log(`   Initializing socketCreationTime NOW to prevent uptime=0`);
+        connectionTime = Date.now();
+        socketCreationTime.set(sanitizedNumber, connectionTime);
+    }
     
     console.log(`🔍 getConnectionStatus("${number}"):`, {
         sanitized: sanitizedNumber,
         isConnected: isConnected,
         connectionTime: connectionTime,
-        activeSockets_keys: Array.from(activeSockets.keys()),
-        socketCreationTime_keys: Array.from(socketCreationTime.keys())
+        uptimeSeconds: connectionTime ? Math.floor((Date.now() - connectionTime) / 1000) : 0,
+        activeSockets_count: activeSockets.size,
+        socketCreationTime_count: socketCreationTime.size
     });
     
     return {
@@ -786,28 +795,64 @@ const l = reply; // sends in small caps automatically
                 }
                 
                 // Execute Plugins
-                const cmdName = isCmd ? body.slice(config.PREFIX.length).trim().split(" ")[0].toLowerCase() : false;
-                if (isCmd) {
-                    // Statistiques
-                    await incrementStats(sanitizedNumber, 'commandsUsed');
-                    
-                    const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName));
-                    if (cmd) {
-                        if (config.WORK_TYPE === 'private' && !isOwner) return;
-                        if (cmd.react) conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } });
-                        
-                        try {
-                            cmd.function(conn, mek, m, {
-                                from, quoted: mek, body, isCmd, command, args, q, text, isGroup, sender, 
-                                senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, 
-                                groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, 
-                                reply, config, myquoted
-                            });
-                        } catch (e) {
-                            console.error("[PLUGIN ERROR] " + e);
-                        }
-                    }
-                }
+const cmdName = isCmd
+    ? body.slice(config.PREFIX.length).trim().split(" ")[0].toLowerCase()
+    : false;
+
+if (!isCmd) return; // 🔥 STOP non-commands immediately
+
+// Statistiques
+await incrementStats(sanitizedNumber, 'commandsUsed');
+
+const cmd =
+    events.commands.find((cmd) => cmd.pattern === cmdName) ||
+    events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName));
+
+if (!cmd) return; // 🔥 STOP if no command matched
+
+if (config.WORK_TYPE === 'private' && !isOwner) return;
+
+if (cmd.react) {
+    await conn.sendMessage(from, {
+        react: { text: cmd.react, key: mek.key }
+    });
+}
+
+try {
+    await cmd.function(conn, mek, m, {
+        from,
+        quoted: mek,
+        body,
+        isCmd,
+        command: cmdName,
+        args,
+        q,
+        text,
+        isGroup,
+        sender,
+        senderNumber,
+        botNumber2,
+        botNumber,
+        pushname,
+        isMe,
+        isOwner,
+        isCreator,
+        groupMetadata,
+        groupName,
+        participants,
+        groupAdmins,
+        isBotAdmins,
+        isAdmins,
+        reply,
+        config,
+        myquoted
+    });
+} catch (e) {
+    console.error("[PLUGIN ERROR] " + e);
+}
+
+return; // 🔥 CRITICAL — DO NOT REMOVE
+
                 
                 // Statistiques messages
                 await incrementStats(sanitizedNumber, 'messagesReceived');
@@ -986,6 +1031,12 @@ router.get('/debug-status', (req, res) => {
     const activeSocketsKeys = Array.from(activeSockets.keys());
     const socketCreationTimeKeys = Array.from(socketCreationTime.keys());
     
+    // Find any mismatch
+    const mismatches = {
+        inActiveSockets_notInCreationTime: activeSocketsKeys.filter(k => !socketCreationTime.has(k)),
+        inCreationTime_notInActiveSockets: socketCreationTimeKeys.filter(k => !activeSockets.has(k))
+    };
+    
     const activeSocketsInfo = activeSocketsKeys.map(num => {
         const creationTime = socketCreationTime.get(num);
         const uptime = creationTime ? Math.floor((Date.now() - creationTime) / 1000) : 0;
@@ -1004,6 +1055,7 @@ router.get('/debug-status', (req, res) => {
         totalCreationTimes: socketCreationTime.size,
         activeSocketsKeys: activeSocketsKeys,
         socketCreationTimeKeys: socketCreationTimeKeys,
+        mismatches: mismatches,
         activeConnections: activeSocketsInfo,
         timestamp: new Date().toISOString()
     });

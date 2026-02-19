@@ -263,7 +263,15 @@ async function displayConnections(numbers) {
     for (const number of numbers) {
         try {
             console.log(`Fetching status for number: ${number}`);
-            const status = await fetchAPI(`/status?number=${number}`);
+            let status = await fetchAPI(`/status?number=${number}`);
+            
+            // RETRY logic - if uptime is 0 but isConnected is true, wait and retry
+            if (status && status.isConnected === true && status.uptime === 0) {
+                console.warn(`⚠️ Uptime is 0 for connected bot ${number}, retrying in 500ms...`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                status = await fetchAPI(`/status?number=${number}`);
+            }
+            
             console.log(`Status response for ${number}:`, status);
             
             if (!status) {
@@ -290,6 +298,12 @@ async function displayConnections(numbers) {
             
             const isConnected = status.isConnected === true;
             const uptime = status.uptime ? formatUptime(status.uptime) : '0s';
+            
+            // Add alert if connected but uptime shows 0
+            if (isConnected && status.uptime === 0) {
+                console.error(`🔴 ERROR: Bot ${number} is connected but uptime is still 0!`);
+                addLog(`⚠️ Warning: ${number} connected but uptime=0. Check server logs.`, 'warning');
+            }
             
             console.log(`Number ${number} - Connected: ${isConnected}, Uptime: ${uptime}`);
             
