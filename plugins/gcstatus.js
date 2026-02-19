@@ -4,13 +4,13 @@
  * Handles typed text without including the command
  */
 
-const { downloadContentFromMessage } = require('baileys');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 module.exports = async (socket, msg, bot) => {
   try {
     const jid = msg.key.remoteJid;
 
-    // ✅ Group only
+    // ✅ Group only.
     if (!jid.endsWith("@g.us")) {
       return socket.sendMessage(jid, { text: "❌ This command works only in groups." }, { quoted: msg });
     }
