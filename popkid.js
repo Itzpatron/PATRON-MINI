@@ -1003,7 +1003,6 @@ router.get('/active', (req, res) => {
     res.set('Expires', '0');
     
     const numbers = Array.from(activeSockets.keys());
-    console.log(`📌 /active called - Found ${numbers.length} active sockets:`, numbers);
     
     res.json({
         count: activeSockets.size,

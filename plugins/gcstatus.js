@@ -1,20 +1,15 @@
 const { cmd } = require('../command');
+const { getContentType } = require('@whiskeysockets/baileys');
 
 cmd({
     pattern: "gcstatus",
     alias: ["gstatus", "groupstatus"],
-    desc: "Post replied message or text as group status",
+    desc: "Post replied media/text or typed text as group status",
     category: "group",
     use: ".gcstatus [reply or text]",
     filename: __filename
 },
-async (conn, m, store, {
-    quoted,
-    args,
-    isGroup,
-    isOwner,
-    reply
-}) => {
+async (conn, m, store, { isGroup, isOwner, reply }) => {
 
     try {
         if (!isGroup)
@@ -23,20 +18,32 @@ async (conn, m, store, {
         if (!isOwner)
             return reply("❌ Only the owner can use this command.");
 
+        // ✅ Extract body manually
+        const body = m.text || m.message?.conversation || "";
+        const args = body.trim().split(/ +/).slice(1);
+
+        // ✅ Extract quoted manually from contextInfo
+        let quotedMsg = null;
+
+        if (m.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+            quotedMsg = m.message.extendedTextMessage.contextInfo.quotedMessage;
+        }
+
         let statusPayload = {};
-        let textContent = "";
 
         // =========================
         // 🖼 IMAGE
         // =========================
-        if (quoted?.mtype === 'imageMessage') {
-            const mediaBuffer = await quoted.download();
-            const caption = quoted.message?.imageMessage?.caption || "";
+        if (quotedMsg && quotedMsg.imageMessage) {
+
+            const mediaBuffer = await conn.downloadMediaMessage({
+                message: quotedMsg
+            });
 
             statusPayload = {
                 groupStatusMessage: {
                     image: mediaBuffer,
-                    caption
+                    caption: quotedMsg.imageMessage.caption || ""
                 }
             };
         }
@@ -44,14 +51,16 @@ async (conn, m, store, {
         // =========================
         // 🎥 VIDEO
         // =========================
-        else if (quoted?.mtype === 'videoMessage') {
-            const mediaBuffer = await quoted.download();
-            const caption = quoted.message?.videoMessage?.caption || "";
+        else if (quotedMsg && quotedMsg.videoMessage) {
+
+            const mediaBuffer = await conn.downloadMediaMessage({
+                message: quotedMsg
+            });
 
             statusPayload = {
                 groupStatusMessage: {
                     video: mediaBuffer,
-                    caption
+                    caption: quotedMsg.videoMessage.caption || ""
                 }
             };
         }
@@ -59,13 +68,16 @@ async (conn, m, store, {
         // =========================
         // 🎵 AUDIO
         // =========================
-        else if (quoted?.mtype === 'audioMessage') {
-            const mediaBuffer = await quoted.download();
+        else if (quotedMsg && quotedMsg.audioMessage) {
+
+            const mediaBuffer = await conn.downloadMediaMessage({
+                message: quotedMsg
+            });
 
             statusPayload = {
                 groupStatusMessage: {
                     audio: mediaBuffer,
-                    ptt: quoted.message?.audioMessage?.ptt || false
+                    ptt: quotedMsg.audioMessage.ptt || false
                 }
             };
         }
@@ -75,16 +87,18 @@ async (conn, m, store, {
         // =========================
         else {
 
-            // 1️⃣ If replying to text
-            if (quoted?.message?.conversation) {
-                textContent = quoted.message.conversation;
+            let textContent = "";
+
+            // If replied to text
+            if (quotedMsg?.conversation) {
+                textContent = quotedMsg.conversation;
             } 
-            else if (quoted?.message?.extendedTextMessage?.text) {
-                textContent = quoted.message.extendedTextMessage.text;
+            else if (quotedMsg?.extendedTextMessage?.text) {
+                textContent = quotedMsg.extendedTextMessage.text;
             }
 
-            // 2️⃣ If no reply text, use args
-            if (!textContent && args?.length > 0) {
+            // If no reply text, use args
+            if (!textContent && args.length > 0) {
                 textContent = args.join(" ");
             }
 
@@ -114,6 +128,6 @@ async (conn, m, store, {
 
     } catch (e) {
         console.error("groupstatus error:", e);
-        return reply("⚠️ Failed to update group status. Please try again later.");
+        return reply("⚠️ Failed to update group status.");
     }
 });
