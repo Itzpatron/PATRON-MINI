@@ -1,5 +1,4 @@
 const { cmd } = require('../command');
-const { getContentType } = require('@whiskeysockets/baileys');
 
 cmd({
     pattern: "gcstatus",
@@ -18,15 +17,14 @@ async (conn, m, store, { isGroup, isOwner, reply }) => {
         if (!isOwner)
             return reply("❌ Only the owner can use this command.");
 
-        // ✅ Extract body manually
+        // ✅ Extract text typed after the command
         const body = m.text || m.message?.conversation || "";
         const args = body.trim().split(/ +/).slice(1);
 
-        // ✅ Extract quoted manually from contextInfo
+        // ✅ Extract the replied message, if any
         let quotedMsg = null;
-
         if (m.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-            quotedMsg = m.message.extendedTextMessage.contextInfo.quotedMessage;
+            quotedMsg = m.message.extendedTextMessage.contextInfo;
         }
 
         let statusPayload = {};
@@ -34,16 +32,14 @@ async (conn, m, store, { isGroup, isOwner, reply }) => {
         // =========================
         // 🖼 IMAGE
         // =========================
-        if (quotedMsg && quotedMsg.imageMessage) {
-
-            const mediaBuffer = await conn.downloadMediaMessage({
-                message: quotedMsg
-            });
+        if (quotedMsg?.quotedMessage?.imageMessage) {
+            const mediaBuffer = await quotedMsg.download?.() || null;
+            if (!mediaBuffer) return reply("❗ Failed to download image.");
 
             statusPayload = {
                 groupStatusMessage: {
                     image: mediaBuffer,
-                    caption: quotedMsg.imageMessage.caption || ""
+                    caption: quotedMsg.quotedMessage.imageMessage.caption || ""
                 }
             };
         }
@@ -51,16 +47,14 @@ async (conn, m, store, { isGroup, isOwner, reply }) => {
         // =========================
         // 🎥 VIDEO
         // =========================
-        else if (quotedMsg && quotedMsg.videoMessage) {
-
-            const mediaBuffer = await conn.downloadMediaMessage({
-                message: quotedMsg
-            });
+        else if (quotedMsg?.quotedMessage?.videoMessage) {
+            const mediaBuffer = await quotedMsg.download?.() || null;
+            if (!mediaBuffer) return reply("❗ Failed to download video.");
 
             statusPayload = {
                 groupStatusMessage: {
                     video: mediaBuffer,
-                    caption: quotedMsg.videoMessage.caption || ""
+                    caption: quotedMsg.quotedMessage.videoMessage.caption || ""
                 }
             };
         }
@@ -68,16 +62,14 @@ async (conn, m, store, { isGroup, isOwner, reply }) => {
         // =========================
         // 🎵 AUDIO
         // =========================
-        else if (quotedMsg && quotedMsg.audioMessage) {
-
-            const mediaBuffer = await conn.downloadMediaMessage({
-                message: quotedMsg
-            });
+        else if (quotedMsg?.quotedMessage?.audioMessage) {
+            const mediaBuffer = await quotedMsg.download?.() || null;
+            if (!mediaBuffer) return reply("❗ Failed to download audio.");
 
             statusPayload = {
                 groupStatusMessage: {
                     audio: mediaBuffer,
-                    ptt: quotedMsg.audioMessage.ptt || false
+                    ptt: quotedMsg.quotedMessage.audioMessage.ptt || false
                 }
             };
         }
@@ -89,15 +81,15 @@ async (conn, m, store, { isGroup, isOwner, reply }) => {
 
             let textContent = "";
 
-            // If replied to text
-            if (quotedMsg?.conversation) {
-                textContent = quotedMsg.conversation;
-            } 
-            else if (quotedMsg?.extendedTextMessage?.text) {
-                textContent = quotedMsg.extendedTextMessage.text;
+            // Use text from replied message
+            if (quotedMsg?.quotedMessage?.conversation) {
+                textContent = quotedMsg.quotedMessage.conversation;
+            }
+            else if (quotedMsg?.quotedMessage?.extendedTextMessage?.text) {
+                textContent = quotedMsg.quotedMessage.extendedTextMessage.text;
             }
 
-            // If no reply text, use args
+            // If no reply text, use typed text
             if (!textContent && args.length > 0) {
                 textContent = args.join(" ");
             }

@@ -849,8 +849,6 @@ try {
     console.error("[PLUGIN ERROR] " + e);
 }
 
-return; // 🔥 CRITICAL — DO NOT REMOVE
-
                 
                 // Statistiques messages
                 await incrementStats(sanitizedNumber, 'messagesReceived');
