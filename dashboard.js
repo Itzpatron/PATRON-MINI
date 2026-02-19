@@ -130,7 +130,6 @@ function logout() {
 
 async function fetchAPI(endpoint) {
     try {
-        console.log(`📡 Fetching API: ${endpoint}`);
         
         // Add timestamp to prevent caching
         const separator = endpoint.includes('?') ? '&' : '?';
@@ -146,7 +145,6 @@ async function fetchAPI(endpoint) {
             cache: 'no-store'
         });
         
-        console.log(`Response Status: ${response.status} for ${endpoint}`);
         
         if (response.status === 304) {
             console.warn('⚠️ Got 304 Not Modified - retrying without cache');
@@ -169,7 +167,6 @@ async function fetchAPI(endpoint) {
         }
         
         const data = await response.json();
-        console.log(`✅ API Response from ${endpoint}:`, data);
         return data;
     } catch (error) {
         console.error(`❌ API Error on ${endpoint}:`, error);
@@ -214,18 +211,15 @@ function clearLogs() {
 
 async function refreshDashboard() {
     addLog('Refreshing dashboard...', 'info');
-    console.log('🔄 Dashboard refresh started');
     
     // Fetch overall stats
     const overallStats = await fetchAPI('/stats-overall');
-    console.log('📊 Overall stats:', overallStats);
     if (overallStats) {
         const totalActive = overallStats.totalActive || 0;
         const totalMessages = overallStats.totalMessages || 0;
         const totalCommands = overallStats.totalCommands || 0;
         const serverUptime = overallStats.serverUptime || 0;
         
-        console.log(`Stats - Active: ${totalActive}, Messages: ${totalMessages}, Commands: ${totalCommands}, Uptime: ${serverUptime}s`);
         
         document.getElementById('totalActive').textContent = totalActive;
         document.getElementById('totalMessages').textContent = totalMessages.toLocaleString();
@@ -237,9 +231,7 @@ async function refreshDashboard() {
 
     // Fetch connections
     const connections = await fetchAPI('/active');
-    console.log('🤖 Active connections response:', connections);
     if (connections) {
-        console.log(`Found ${connections.count || 0} active connections:`, connections.numbers);
         displayConnections(connections.numbers || []);
     } else {
         console.error('❌ Failed to fetch active connections');
@@ -262,7 +254,6 @@ async function displayConnections(numbers) {
     let html = '';
     for (const number of numbers) {
         try {
-            console.log(`Fetching status for number: ${number}`);
             let status = await fetchAPI(`/status?number=${number}`);
             
             // RETRY logic - if uptime is 0 but isConnected is true, wait and retry
@@ -272,7 +263,6 @@ async function displayConnections(numbers) {
                 status = await fetchAPI(`/status?number=${number}`);
             }
             
-            console.log(`Status response for ${number}:`, status);
             
             if (!status) {
                 console.warn(`No response for ${number}, marking as offline`);
@@ -305,7 +295,6 @@ async function displayConnections(numbers) {
                 addLog(`⚠️ Warning: ${number} connected but uptime=0. Check server logs.`, 'warning');
             }
             
-            console.log(`Number ${number} - Connected: ${isConnected}, Uptime: ${uptime}`);
             
             html += `
                 <div class="connection-item ${isConnected ? 'connected' : 'disconnected'}">

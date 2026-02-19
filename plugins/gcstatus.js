@@ -3,15 +3,15 @@ const { cmd } = require('../command');
 cmd({
     pattern: "gcstatus",
     alias: ["gstatus", "groupstatus"],
-    desc: "Post replied message as group status",
+    desc: "Post replied message or text as group status",
     category: "group",
-    use: ".groupstatus [reply to image/video/audio/text]",
+    use: ".gcstatus [reply or text]",
     filename: __filename
 },
 async (conn, m, store, {
     quoted,
+    args,
     isGroup,
-    isAdmins,
     isOwner,
     reply
 }) => {
@@ -20,19 +20,18 @@ async (conn, m, store, {
         if (!isGroup)
             return reply("❌ This command can only be used in groups.");
 
-        if (!isOwner) // change to isAdmins if you actually mean admins
+        if (!isOwner)
             return reply("❌ Only the owner can use this command.");
 
-        if (!quoted)
-            return reply("❗ Please reply to the media or text you want to set as group status.");
-
-        const mtype = quoted.mtype || quoted.type;
         let statusPayload = {};
+        let textContent = "";
 
+        // =========================
         // 🖼 IMAGE
-        if (mtype === 'imageMessage') {
+        // =========================
+        if (quoted?.mtype === 'imageMessage') {
             const mediaBuffer = await quoted.download();
-            const caption = quoted.imageMessage?.caption || '';
+            const caption = quoted.message?.imageMessage?.caption || "";
 
             statusPayload = {
                 groupStatusMessage: {
@@ -42,10 +41,12 @@ async (conn, m, store, {
             };
         }
 
+        // =========================
         // 🎥 VIDEO
-        else if (mtype === 'videoMessage') {
+        // =========================
+        else if (quoted?.mtype === 'videoMessage') {
             const mediaBuffer = await quoted.download();
-            const caption = quoted.videoMessage?.caption || '';
+            const caption = quoted.message?.videoMessage?.caption || "";
 
             statusPayload = {
                 groupStatusMessage: {
@@ -55,21 +56,41 @@ async (conn, m, store, {
             };
         }
 
+        // =========================
         // 🎵 AUDIO
-        else if (mtype === 'audioMessage') {
+        // =========================
+        else if (quoted?.mtype === 'audioMessage') {
             const mediaBuffer = await quoted.download();
 
             statusPayload = {
                 groupStatusMessage: {
                     audio: mediaBuffer,
-                    ptt: quoted.audioMessage?.ptt || false
+                    ptt: quoted.message?.audioMessage?.ptt || false
                 }
             };
         }
 
-        // 📝 TEXT
-        else if (mtype === 'conversation' || mtype === 'extendedTextMessage') {
-            const textContent = quoted.text || quoted.msg || '';
+        // =========================
+        // 📝 TEXT (Reply OR Args)
+        // =========================
+        else {
+
+            // 1️⃣ If replying to text
+            if (quoted?.message?.conversation) {
+                textContent = quoted.message.conversation;
+            } 
+            else if (quoted?.message?.extendedTextMessage?.text) {
+                textContent = quoted.message.extendedTextMessage.text;
+            }
+
+            // 2️⃣ If no reply text, use args
+            if (!textContent && args?.length > 0) {
+                textContent = args.join(" ");
+            }
+
+            if (!textContent || typeof textContent !== "string") {
+                return reply("❗ Reply to media/text OR provide text after the command.");
+            }
 
             const bgColors = [
                 '#FF5733', '#33FF57', '#3357FF',
@@ -87,11 +108,8 @@ async (conn, m, store, {
             };
         }
 
-        else {
-            return reply("❌ Unsupported media type.");
-        }
-
         await conn.sendMessage(m.chat, statusPayload);
+
         return reply("✅ Group status updated successfully.");
 
     } catch (e) {

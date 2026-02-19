@@ -355,18 +355,18 @@ async function startBot(number, res = null) {
         });
         
         // 3. Enregistrer connexion
-        socketCreationTime.set(sanitizedNumber, Date.now());
-        console.log(`✅ REGISTERED socketCreationTime for ${sanitizedNumber} at ${Date.now()}`);
+        // CRITICAL: Only set creation time on FIRST connection, not on reconnect!
+        if (!socketCreationTime.has(sanitizedNumber)) {
+            socketCreationTime.set(sanitizedNumber, Date.now());
+        } else {
+        }
         
         if (activeSockets.size >= MAX_CONNECTIONS) {
     console.log("SERVER IS FULL TRY ANOTHER SERVER 🚹");
     return;
         }
         activeSockets.set(sanitizedNumber, conn);
-        console.log(`✅ REGISTERED activeSockets for ${sanitizedNumber}. Total active: ${activeSockets.size}`);
-        console.log(`   activeSockets keys now:`, Array.from(activeSockets.keys()));
-        console.log(`   socketCreationTime keys now:`, Array.from(socketCreationTime.keys()));
-        
+
         store.bind(conn.ev);
         
         // 4. Setup handlers
@@ -469,13 +469,11 @@ async function startBot(number, res = null) {
                 
                 // ENSURE connection time is registered (in case it was cleared)
                 if (!socketCreationTime.has(sanitizedNumber)) {
-                    console.log(`🕐 Setting socketCreationTime for ${sanitizedNumber} on connection open`);
                     socketCreationTime.set(sanitizedNumber, Date.now());
                 }
                 
                 // ENSURE in activeSockets
                 if (!activeSockets.has(sanitizedNumber)) {
-                    console.log(`📱 Adding ${sanitizedNumber} to activeSockets on connection open`);
                     activeSockets.set(sanitizedNumber, conn);
                 }
                 
@@ -1206,14 +1204,6 @@ router.get('/stats', async (req, res) => {
             totalGroups = statsArray.groupsInteracted || 0;
         }
         
-        console.log(`📊 Stats for ${sanitizedNumber}:`, {
-            totalMessages,
-            totalCommands,
-            totalGroups,
-            connectionStatus: connectionStatus.isConnected,
-            uptime: connectionStatus.uptime
-        });
-        
         res.json({
             number: sanitizedNumber,
             connectionStatus: connectionStatus.isConnected ? 'Connected' : 'Disconnected',
@@ -1236,7 +1226,6 @@ router.get('/stats-overall', async (req, res) => {
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
     try {
-        console.log(`📊 /stats-overall called - Active connections: ${activeSockets.size}`);
         
         let totalMessages = 0;
         let totalCommands = 0;
@@ -1244,9 +1233,7 @@ router.get('/stats-overall', async (req, res) => {
         
         // Calculer stats pour tous les numéros actifs
         for (const number of activeSockets.keys()) {
-            console.log(`📊 Fetching stats for ${number}`);
             const statsArray = await getStatsForNumber(number);
-            console.log(`📊 Stats for ${number}:`, statsArray);
             
             // statsArray is an array of daily stats, sum them all
             if (Array.isArray(statsArray)) {
@@ -1275,7 +1262,6 @@ router.get('/stats-overall', async (req, res) => {
             timestamp: new Date().toISOString()
         };
         
-        console.log(`📊 Final stats result:`, result);
         res.json(result);
     } catch (error) {
         console.error('Error getting overall stats:', error);
