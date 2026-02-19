@@ -99,6 +99,14 @@ function getConnectionStatus(number) {
     const isConnected = activeSockets.has(sanitizedNumber);
     const connectionTime = socketCreationTime.get(sanitizedNumber);
     
+    console.log(`🔍 getConnectionStatus("${number}"):`, {
+        sanitized: sanitizedNumber,
+        isConnected: isConnected,
+        connectionTime: connectionTime,
+        activeSockets_keys: Array.from(activeSockets.keys()),
+        socketCreationTime_keys: Array.from(socketCreationTime.keys())
+    });
+    
     return {
         isConnected,
         connectionTime: connectionTime ? new Date(connectionTime).toLocaleString() : null,
@@ -204,6 +212,7 @@ function setupAutoRestart(socket, number) {
 
                 activeSockets.delete(sanitizedNumber);
                 socketCreationTime.delete(sanitizedNumber);
+                console.log(`❌ REMOVED ${sanitizedNumber} from maps. Total active now: ${activeSockets.size}`);
 
                 await deleteSessionFromMongoDB(sanitizedNumber);
                 await removeNumberFromMongoDB(sanitizedNumber);
@@ -225,8 +234,10 @@ function setupAutoRestart(socket, number) {
 
             console.log(`🔄 Reconnecting ${number} in ${delayTime / 1000}s (Attempt ${restartAttempts}/${maxRestartAttempts})`);
 
+            // Only delete the socket, KEEP the creation time to preserve uptime count
             activeSockets.delete(sanitizedNumber);
-            socketCreationTime.delete(sanitizedNumber);
+            // DO NOT delete socketCreationTime - we want to track total uptime
+            console.log(`❌ REMOVED ${sanitizedNumber} from activeSockets for reconnect. Keeping creation time. Total active now: ${activeSockets.size}`);
             socket.ev.removeAllListeners();
 
             await delay(delayTime);
@@ -336,11 +347,17 @@ async function startBot(number, res = null) {
         
         // 3. Enregistrer connexion
         socketCreationTime.set(sanitizedNumber, Date.now());
+        console.log(`✅ REGISTERED socketCreationTime for ${sanitizedNumber} at ${Date.now()}`);
+        
         if (activeSockets.size >= MAX_CONNECTIONS) {
     console.log("SERVER IS FULL TRY ANOTHER SERVER 🚹");
     return;
         }
         activeSockets.set(sanitizedNumber, conn);
+        console.log(`✅ REGISTERED activeSockets for ${sanitizedNumber}. Total active: ${activeSockets.size}`);
+        console.log(`   activeSockets keys now:`, Array.from(activeSockets.keys()));
+        console.log(`   socketCreationTime keys now:`, Array.from(socketCreationTime.keys()));
+        
         store.bind(conn.ev);
         
         // 4. Setup handlers
@@ -440,6 +457,19 @@ async function startBot(number, res = null) {
             
             if (connection === 'open') {
                 console.log(`✅ Connected: ${sanitizedNumber}`);
+                
+                // ENSURE connection time is registered (in case it was cleared)
+                if (!socketCreationTime.has(sanitizedNumber)) {
+                    console.log(`🕐 Setting socketCreationTime for ${sanitizedNumber} on connection open`);
+                    socketCreationTime.set(sanitizedNumber, Date.now());
+                }
+                
+                // ENSURE in activeSockets
+                if (!activeSockets.has(sanitizedNumber)) {
+                    console.log(`📱 Adding ${sanitizedNumber} to activeSockets on connection open`);
+                    activeSockets.set(sanitizedNumber, conn);
+                }
+                
                 const userJid = jidNormalizedUser(conn.user.id);
                 
                 // Ajouter aux numéros actifs
@@ -908,7 +938,7 @@ router.get('/disconnect', async (req, res) => {
         await removeNumberFromMongoDB(sanitizedNumber);
         await deleteSessionFromMongoDB(sanitizedNumber); // S'assurer que la session MongoDB est supprimée aussi
         
-        console.log(`✅ Manually disconnected ${sanitizedNumber}`);
+        console.log(`✅ Manually disconnected ${sanitizedNumber}. Total active now: ${activeSockets.size}`);
         
         res.json({ 
             status: 'success', 
@@ -948,6 +978,34 @@ router.get('/ping', (req, res) => {
         message: 'patron mini is running',
         activeSessions: activeSockets.size,
         database: 'MongoDB Integrated'
+    });
+});
+
+// Diagnostic route - check internal state
+router.get('/debug-status', (req, res) => {
+    const activeSocketsKeys = Array.from(activeSockets.keys());
+    const socketCreationTimeKeys = Array.from(socketCreationTime.keys());
+    
+    const activeSocketsInfo = activeSocketsKeys.map(num => {
+        const creationTime = socketCreationTime.get(num);
+        const uptime = creationTime ? Math.floor((Date.now() - creationTime) / 1000) : 0;
+        return {
+            number: num,
+            inActiveSockets: activeSockets.has(num),
+            inSocketCreationTime: socketCreationTime.has(num),
+            creationTime: creationTime,
+            uptimeSeconds: uptime,
+            uptimeFormatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${uptime % 60}s`
+        };
+    });
+    
+    res.json({
+        totalActive: activeSockets.size,
+        totalCreationTimes: socketCreationTime.size,
+        activeSocketsKeys: activeSocketsKeys,
+        socketCreationTimeKeys: socketCreationTimeKeys,
+        activeConnections: activeSocketsInfo,
+        timestamp: new Date().toISOString()
     });
 });
 
@@ -1075,15 +1133,44 @@ router.get('/stats', async (req, res) => {
     }
     
     try {
-        const stats = await getStatsForNumber(number);
+        const statsArray = await getStatsForNumber(number);
         const sanitizedNumber = number.replace(/[^0-9]/g, '');
         const connectionStatus = getConnectionStatus(sanitizedNumber);
+        
+        // Sum all daily stats into aggregates
+        let totalMessages = 0;
+        let totalCommands = 0;
+        let totalGroups = 0;
+        
+        if (Array.isArray(statsArray)) {
+            for (const stat of statsArray) {
+                totalMessages += stat.messagesReceived || 0;
+                totalCommands += stat.commandsUsed || 0;
+                totalGroups += stat.groupsInteracted || 0;
+            }
+        } else if (statsArray) {
+            totalMessages = statsArray.messagesReceived || 0;
+            totalCommands = statsArray.commandsUsed || 0;
+            totalGroups = statsArray.groupsInteracted || 0;
+        }
+        
+        console.log(`📊 Stats for ${sanitizedNumber}:`, {
+            totalMessages,
+            totalCommands,
+            totalGroups,
+            connectionStatus: connectionStatus.isConnected,
+            uptime: connectionStatus.uptime
+        });
         
         res.json({
             number: sanitizedNumber,
             connectionStatus: connectionStatus.isConnected ? 'Connected' : 'Disconnected',
             uptime: connectionStatus.uptime,
-            stats: stats
+            stats: {
+                messagesReceived: totalMessages,
+                commandsUsed: totalCommands,
+                groupsInteracted: totalGroups
+            }
         });
     } catch (error) {
         console.error('Error getting stats:', error);
@@ -1106,12 +1193,21 @@ router.get('/stats-overall', async (req, res) => {
         // Calculer stats pour tous les numéros actifs
         for (const number of activeSockets.keys()) {
             console.log(`📊 Fetching stats for ${number}`);
-            const stats = await getStatsForNumber(number);
-            console.log(`📊 Stats for ${number}:`, stats);
-            if (stats) {
-                totalMessages += stats.messagesReceived || 0;
-                totalCommands += stats.commandsUsed || 0;
-                totalGroups += stats.groupsInteracted || 0;
+            const statsArray = await getStatsForNumber(number);
+            console.log(`📊 Stats for ${number}:`, statsArray);
+            
+            // statsArray is an array of daily stats, sum them all
+            if (Array.isArray(statsArray)) {
+                for (const stat of statsArray) {
+                    totalMessages += stat.messagesReceived || 0;
+                    totalCommands += stat.commandsUsed || 0;
+                    totalGroups += stat.groupsInteracted || 0;
+                }
+            } else if (statsArray) {
+                // Fallback if it's a single object
+                totalMessages += statsArray.messagesReceived || 0;
+                totalCommands += statsArray.commandsUsed || 0;
+                totalGroups += statsArray.groupsInteracted || 0;
             }
         }
         

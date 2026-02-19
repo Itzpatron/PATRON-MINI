@@ -444,12 +444,52 @@ async function deleteBot(number) {
 }
 
 async function showStats(number) {
-    addLog(`Fetching stats for ${number}...`, 'info');
-    const stats = await fetchAPI(`/stats?number=${number}`);
-    if (stats?.stats) {
-        const msg = `📊 Stats for ${number}:\n\nMessages: ${stats.stats.messagesReceived}\nCommands: ${stats.stats.commandsUsed}\nGroups: ${stats.stats.groupsInteracted}`;
+    try {
+        console.log(`📊 Fetching stats for ${number}...`);
+        addLog(`📊 Fetching stats for ${number}...`, 'info');
+        
+        const response = await fetchAPI(`/stats?number=${number}`);
+        console.log(`📊 Stats response:`, response);
+        
+        if (!response) {
+            console.error('No response from stats API');
+            addLog(`❌ Failed to fetch stats for ${number}`, 'error');
+            alert('❌ Failed to fetch stats');
+            return;
+        }
+        
+        const stats = response.stats;
+        const connectionStatus = response.connectionStatus;
+        const uptime = response.uptime;
+        
+        if (!stats) {
+            console.error('Stats object missing from response');
+            addLog(`❌ No stats data available for ${number}`, 'error');
+            alert('❌ No stats data available');
+            return;
+        }
+        
+        const messagesReceived = stats.messagesReceived || 0;
+        const commandsUsed = stats.commandsUsed || 0;
+        const groupsInteracted = stats.groupsInteracted || 0;
+        
+        console.log('Parsed stats:', { messagesReceived, commandsUsed, groupsInteracted });
+        
+        const msg = `📊 STATISTICS FOR ${number}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+📬 Messages Received: ${messagesReceived.toLocaleString()}
+🎯 Commands Used: ${commandsUsed.toLocaleString()}
+👥 Groups Interacted: ${groupsInteracted.toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢 Status: ${connectionStatus}
+⏱️ Uptime: ${formatUptime(uptime)}`;
+        
         alert(msg);
-        addLog(`Stats retrieved for ${number}`, 'success');
+        addLog(`✅ Stats retrieved for ${number}`, 'success');
+    } catch (error) {
+        console.error('❌ Error in showStats:', error);
+        addLog(`❌ Error fetching stats: ${error.message}`, 'error');
+        alert('❌ Error fetching stats: ' + error.message);
     }
 }
 
