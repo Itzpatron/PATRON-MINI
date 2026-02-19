@@ -10,7 +10,7 @@ cmd({
     try {
         const jid = m.chat;
 
-        const baseUrl = "https://patron-mini.up.railway.app"; // fallback URL
+        const baseUrl = "http://patronffx.name.ng:3015"; // fallback URL
 
         // 1️⃣ Repo info message
         const repoMessage = `

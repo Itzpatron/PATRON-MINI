@@ -14,14 +14,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is crying over @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is crying!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/cry";
             let res = await axios.get(apiUrl);
@@ -54,14 +54,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} cuddled @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is cuddling everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/cuddle";
             let res = await axios.get(apiUrl);
@@ -94,14 +94,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is bullying @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is bullying everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/bully";
             let res = await axios.get(apiUrl);
@@ -134,14 +134,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} hugged @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is hugging everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/hug";
             let res = await axios.get(apiUrl);
@@ -175,14 +175,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} awoos at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is awooing everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/awoo";
             let res = await axios.get(apiUrl);
@@ -215,7 +215,7 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
 
             let message = mentionedUser ? `${sender} licked @${mentionedUser.split("@")[0]}` : `${sender} licked themselves!`;
 
@@ -250,14 +250,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} patted @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is patting everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/pat";
             let res = await axios.get(apiUrl);
@@ -290,14 +290,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is smug at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is feeling smug!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/smug";
             let res = await axios.get(apiUrl);
@@ -330,14 +330,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} bonked @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is bonking everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/bonk";
             let res = await axios.get(apiUrl);
@@ -371,14 +371,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} yeeted @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is yeeting everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/yeet";
             let res = await axios.get(apiUrl);
@@ -411,14 +411,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is blushing at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is blushing!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/blush";
             let res = await axios.get(apiUrl);
@@ -451,14 +451,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is holding hands with @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} wants to hold hands with everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/handhold";
             let res = await axios.get(apiUrl);
@@ -492,14 +492,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} gave a high-five to @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is high-fiving everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/highfive";
             let res = await axios.get(apiUrl);
@@ -532,14 +532,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is nomming @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is nomming everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/nom";
             let res = await axios.get(apiUrl);
@@ -572,14 +572,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} waved at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is waving at everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/wave";
             let res = await axios.get(apiUrl);
@@ -612,14 +612,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} smiled at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is smiling at everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/smile";
             let res = await axios.get(apiUrl);
@@ -652,14 +652,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} winked at @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is winking at everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/wink";
             let res = await axios.get(apiUrl);
@@ -692,14 +692,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} is happy with @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is happy with everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/happy";
             let res = await axios.get(apiUrl);
@@ -732,14 +732,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} glomped @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is glomping everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/glomp";
             let res = await axios.get(apiUrl);
@@ -772,14 +772,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} bit @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is biting everyone!`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/bite";
             let res = await axios.get(apiUrl);
@@ -812,14 +812,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} poked @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} poked everyone`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/poke";
             let res = await axios.get(apiUrl);
@@ -853,14 +853,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} thinks @${mentionedUser.split("@")[0]} is cringe`
                 : isGroup
                 ? `${sender} finds everyone cringe`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/cringe";
             let res = await axios.get(apiUrl);
@@ -894,14 +894,14 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message = mentionedUser
                 ? `${sender} danced with @${mentionedUser.split("@")[0]}`
                 : isGroup
                 ? `${sender} is dancing with everyone`
-                : `> © mᥱrᥴᥱძᥱs 🖤`;
+                : `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
 
             const apiUrl = "https://api.waifu.pics/sfw/dance";
             let res = await axios.get(apiUrl);
@@ -936,7 +936,7 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message;
@@ -946,7 +946,7 @@ cmd(
             } else if (isGroup) {
                 message = `${sender} killed everyone`;
             } else {
-                message = `> © mᥱrᥴᥱძᥱs 🖤`;
+                message = `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
             }
 
             const apiUrl = "https://api.waifu.pics/sfw/kill";
@@ -980,7 +980,7 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message;
@@ -990,7 +990,7 @@ cmd(
             } else if (isGroup) {
                 message = `${sender} slapped everyone`;
             } else {
-                message = `> © mᥱrᥴᥱძᥱs 🖤`;
+                message = `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
             }
 
             const apiUrl = "https://api.waifu.pics/sfw/slap";
@@ -1024,7 +1024,7 @@ cmd(
     async (conn, mek, m, { args, q, reply }) => {
         try {
             let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
+            let mentionedUser = m?.mentionedJid?.[0] || (mek.quoted && mek.quoted.sender);
             let isGroup = m.isGroup;
 
             let message;
@@ -1034,7 +1034,7 @@ cmd(
             } else if (isGroup) {
                 message = `${sender} kissed everyone`;
             } else {
-                message = `> © mᥱrᥴᥱძᥱs🖤`;
+                message = `© ᴘᴀᴛʀᴏɴ-ᴍɪɴɪ 🚹`;
             }
 
             const apiUrl = "https://api.waifu.pics/sfw/kiss";

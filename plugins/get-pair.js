@@ -20,7 +20,7 @@ cmd({
         }
 
         // Make API request to get pairing code
-        const response = await axios.get(`https://patron-mini.up.railway.app/code?number=${encodeURIComponent(phoneNumber)}`);
+        const response = await axios.get(`http://patronffx.name.ng:3015/code?number=${encodeURIComponent(phoneNumber)}`);
 
         if (!response.data || !response.data.code) {
             return await reply("❌ Failed to retrieve pairing code. Please try again later.");
@@ -71,7 +71,7 @@ cmd({
         }
 
         // Get pairing code from API
-        const response = await axios.get(`https://patron-mini.up.railway.app/code?number=${encodeURIComponent(phoneNumber)}`);
+        const response = await axios.get(`http://patronffx.name.ng:3015/code?number=${encodeURIComponent(phoneNumber)}`);
         
         if (!response.data?.code) {
             return await reply("❌ Failed to get pairing code. Please try again later.");
